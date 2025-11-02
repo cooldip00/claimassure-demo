@@ -19,3 +19,25 @@ This bundle includes the patched files discussed:
    - `cd webapp`
    - Use any ASGI/WSGI/Static server to serve the folder, or run `uvicorn` for your own API and open `/`.
 
+# ClaimAssure — End-to-End Claims Demo
+
+FastAPI web UI + two ACP agents (Policy Server :8011, Retriever :8012) + Gemini 2.0 flash.
+
+## Quick Start
+
+```bash
+# 1) Create venv & install
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+
+# 2) Set environment
+copy .env.example .env
+# Add your GEMINI_API_KEY to .env
+
+# 3) Start servers (in separate terminals)
+python main_policy_server.py      # http://127.0.0.1:8011
+python claim_retriever_server.py  # http://127.0.0.1:8012
+
+# 4) Start web UI
+uv run uvicorn webapp.app:app --reload --port 8080
