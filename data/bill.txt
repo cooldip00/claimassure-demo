@@ -1,0 +1,18 @@
+MEDICAL BILL
+
+Hospital Name: Sunshine Hospital
+Invoice Number: INV445566
+Date of Admission: 2025-10-20
+Date of Discharge: 2025-10-23
+
+Service Description:
+- Room Charges: ₹12,000
+- Medication: ₹10,000
+- Surgery Fees: ₹18,000
+- Miscellaneous: ₹3,000
+
+Grand Total: ₹43,000
+Total Amount Due: ₹43,000
+
+Authorized Signatory:
+Billing Department - Sunshine Hospital

@@ -1,0 +1,18 @@
+CLAIM FORM
+
+Policy Holder Name: John Doe
+Policy Number: POL123456
+Claim Number: CLM998877
+Hospital Name: Sunshine Hospital
+Invoice Number: INV445566
+Date of Treatment: 2025-10-20
+Email: john.doe@example.com
+Claim Type: Medical
+Total Claimed Amount: ₹43,000
+Maximum Claim Limit: ₹5,00,000
+
+Declaration:
+I, John Doe, hereby declare that the information provided is true and correct to the best of my knowledge.
+
+Signature of Policy Holder: John Doe
+Date: 2025-10-25

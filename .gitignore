@@ -1,0 +1,42 @@
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite3
+*.db
+*.pid
+
+# --- Virtual env ---
+.venv/
+venv/
+env/
+
+# --- Editor/OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Local uploads & generated data ---
+uploads/
+history/customer_history.csv
+history/*.tmp
+*.cache/
+
+# --- Build / dist ---
+dist/
+build/
+
+# --- FastAPI / Uvicorn artifacts ---
+*.coverage
+.coverage
+htmlcov/
+
+# --- Node-style leftovers (if any) ---
+node_modules/
+
+# --- Secrets ---
+.env
+.env.*    # e.g., .env.local

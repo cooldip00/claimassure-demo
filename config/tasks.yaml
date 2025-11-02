@@ -1,0 +1,284 @@
+classify_and_validate_documents:
+  description: >
+    Use the DirectoryLoaderTool with NO directory_path argument so it loads from the default data/ folder.
+    After loading the content, perform these validation steps:
+    1. For each document, identify its type. Allowed types are 'Policy', 'Bill', 'Claim Form'.
+    2. **CRITICAL RULE 1:** If any document is not an allowed type, validation fails.
+    3. If all types are valid, check if all three required documents are present. If not, validation fails.
+    4. **CRITICAL RULE 2:** If all three documents are present, you must perform a cross-document consistency check:
+        - First, from the text of the 'Policy' document, extract the 'Policy Holder Name' and 'Policy Number'.
+        - Second, from the text of the 'Claim Form' document, extract the 'Policy Holder Name' and 'Policy Number'.
+        - Third, compare them. The name from the Policy must EXACTLY match the name from the Claim Form. The Policy Number must also EXACTLY match.
+        - If there is ANY mismatch in either the name or the policy number, validation fails.
+
+    5. **CRITICAL RULE 3:** If all previous checks have passed, you must perform a financial consistency check:
+        - From the 'Claim Form' text, extract the 'Total Claimed Amount'.
+        - From the 'Bill' text, extract the final 'Total Amount Due' or 'Grand Total'.
+        - The amount from the Claim Form must EXACTLY match the total from the Bill.
+        - If the amounts do not match, validation fails.
+
+    Finally, you must structure your output to include BOTH the validation result and the full document content.
+    The document content should be the complete text extracted by the tool.
+  
+  expected_output: >
+    A final string that contains a structured report of your findings. It MUST include:
+    - A 'Validation-Status' field: either "Success" or "Failure".
+    - A 'Validation-Message' field: explaining the reason for failure or confirming success.
+    - A 'Document-Content' field: containing the complete, unmodified text of ALL documents concatenated together.
+    
+    Example for success:
+    Validation-Status: Success
+    Validation-Message: All required documents (Policy, Bill, Claim Form) are present and valid.
+    
+    Document-Content: 
+    
+    --- START OF DOCUMENT: policy.pdf ---
+    ... (full text of policy) ...
+    --- END OF DOCUMENT: policy.pdf ---
+    --- START OF DOCUMENT: bill.docx ---
+    ... (full text of bill) ...
+    --- END OF DOCUMENT: bill.docx ---
+
+    Example for NEW failure case:
+    Validation-Status: Failure
+    Validation-Message: Cross-document validation failed: Policy Number mismatch between Policy Document and Claim Form.
+    
+    Document-Content: 
+    --- START OF DOCUMENT: policy.pdf ---
+    ... (full text of policy) ...
+    --- END OF DOCUMENT: policy.pdf ---
+    ... (and so on) ...
+
+    Example for NEW failure case:
+    Validation-Status: Failure
+    Validation-Message: Financial consistency check failed: The amount on the Claim Form (e.g., 45000) does not match the amount on the Bill (e.g., 43500).
+    
+    Document-Content: 
+    --- START OF DOCUMENT: policy.pdf ---
+    ... (full text of policy) ...
+    --- END OF DOCUMENT: policy.pdf ---
+    ... (and so on) ...
+
+extract_claim_details:
+  description: >
+    You will receive a structured string from the previous validation task as your context.
+    This context contains 'Validation-Status', 'Validation-Message', and 'Document-Content'.
+    Your actions depend on the 'Validation-Status':
+    
+    - If 'Validation-Status' is "Success":
+      You MUST use the text provided in the 'Document-Content' section of the context to perform data extraction.
+      Extract the following details and format them into the required JSON structure:
+      - Policy Holder's Full Name
+      - Claim Number
+      - Policy Number
+      - Hospital Name
+      - Invoice Number
+      - Total Claim Amount
+      - Policy Holder's Email Address
+      - Maximum Claim Limit
+      Your final JSON should have a 'status' of 'Success' and a 'message' of 'Extraction successful'.
+
+    - If 'Validation-Status' is "Failure":
+      You MUST NOT attempt to extract any data. Instead, create a JSON object reflecting the failure.
+      Use the 'Validation-Message' from the context to populate the 'message' field in your JSON.
+      The JSON 'status' field must be 'Failure', and all other data fields must be set to "Error: Validation Failed".
+  expected_output: >
+    A JSON object containing the extraction status and either the extracted data or error information.
+    For example on failure:
+    {
+      "status": "Failure",
+      "message": "VALIDATION FAILED: Invalid document type found: resume.pdf",
+      "Policy_Holder": "Error: Validation Failed",
+      "Claim_Number": "Error: Validation Failed",
+      "Policy_Number": "Error: Validation Failed",
+      "Claim_Amount": "Error: Validation Failed",
+      "Email": "Error: Validation Failed",
+      "Maximum Claim Limit": "Error: Validation Failed"
+    }
+
+external_verification: 
+  description: >
+    You have received a JSON object with freshly extracted claim data from the previous task.
+    Your job is to act as a gatekeeper by authenticating these details with the external hospital database.
+
+    Follow these steps carefully:
+
+    1.  From the input JSON, get the "Invoice Number", "Hospital Name", and "Claim_Amount".
+    2.  Use the "External Hospital Claim Retriever (via ACP Bridge)" tool, passing it ONLY the "Invoice Number".
+    3.  The tool will return a JSON string with the official hospital record. Parse this JSON.
+    4.  Perform the verification: Check if the retrieved record has an error, or if the Hospital Name or Total Amount do not match.
+    5.  For numeric comparison, you MUST normalize both the claim and hospital amounts using the helper function below.
+        - Remove currency symbols (₹, $, etc.)
+        - Remove commas or spaces
+        - Convert the result to a float
+        - Example: "₹43,000" → 43000.0
+        - Example: "$12,500.50" → 12500.50
+    6.  When comparing names or invoice numbers, trim whitespace and ensure case-insensitive matching.
+    7.  Based on these checks, determine a `verification_status` ("Success" or "Failure") and a `verification_message`.
+    8.  Always include both the original extracted data and the full hospital record in your final JSON.
+
+    Helper function you must conceptually apply for numeric comparison:
+    ```
+    def normalize_amount(value):
+        s = str(value or "").replace("₹","").replace("$","").replace(",","").strip()
+        try:
+            return float(s)
+        except:
+            return None
+    ```
+    Use this logic before comparing the claim amount and hospital total.
+
+  expected_output: >
+    A final JSON object that passes ALL information to the next agent. It MUST contain three top-level keys:
+    1.  `"original_data"`: The complete, unmodified JSON object you received as input from the extractor.
+    2.  `"hospital_record"`: The full JSON object returned by the retriever tool (or the error object if it failed).
+    3.  `"verification_details"`: An object containing your `status` and `message`.
+
+    Example Output Structure:
+    {
+      "original_data": {
+        "Hospital Name": "Sunshine Hospital",
+        "Invoice Number": "INV445566",
+        "Claim_Amount": "₹43,000",
+        "Policy_Holder": "John Doe",
+        ...
+      },
+      "hospital_record": {
+        "Hospital Name": "Sunshine Hospital",
+        "Invoice Number": "INV445566",
+        "Total Amount": "₹43,000",
+        ...
+      },
+      "verification_details": {
+        "status": "Success",
+        "message": "All details match hospital record after normalization."
+      }
+    }
+
+manage_history_and_decide: 
+  description: >
+    You are the final adjudicator. You have received a comprehensive JSON object containing the original claim data,
+    the retrieved hospital record, and the result of the external verification.
+    Available tools: {available_tools}
+
+    Your actions are dictated by the verification status. Follow these steps PRECISELY:
+    1.  First, inspect the `verification_details.status`.
+    2.  **IF the status is "Failure"**:
+        - You MUST immediately reject the claim.
+        - Your final output will be a JSON object with a "Final Decision" of "Rejected" and a "Rejection Reason" taken from the `verification_details.message`.
+        - DO NOT perform any history checks or database updates.
+
+    3.  **IF the status is "Success"**:
+        - Proceed with the internal policy check. Use the `original_data` object for all details (customer name, policy number, claim amount, etc.).
+        - Use the 'Read Customer Claim History Tool' to get the previously claimed amount.
+        - Calculate the remaining limit and decide on the outcome ('Approved Full Amount', 'Approved Partial Amount', or 'Rejected' if the policy limit is exceeded).
+        - If approved, you MUST use the 'Update Claim History Database Tool' to record the transaction.
+        - Conclude by creating your final summary report.
+
+  expected_output: >
+    The final, binding JSON report for the claim.
+
+    If verification failed, the output should be simple:
+    {
+      "Customer Name": "John Doe",
+      "Policy Number": "POL123456",
+      "Final Decision": "Rejected",
+      "Rejection Reason": "External verification failed: Invoice number not found in hospital database."
+    }
+
+    If verification succeeded, the output should be the full financial summary:
+    {
+      "Customer Name": "John Doe",
+      "Policy Number": "POL123456",
+      "Final Decision": "Approved Full Amount",
+      "Amount Approved": 43000.0,
+      "Confirmation": "Database has been updated with the approved claim."
+    }
+
+retrieve_hospital_claim: 
+  description: >
+    You will receive a natural language request that contains an invoice number.
+    1. Extract the 'Invoice Number' from the input: '{claim_details}'.
+    2. You MUST use the "ClaimRetrieverTool" to fetch the data.
+    3. Pass the extracted invoice number to the tool.
+    4. Return the verbatim JSON output from the tool.
+  expected_output: >
+    A JSON string containing the complete database record for the given invoice number,
+    or a JSON object with an "error" key if the record was not found.
+
+synthesize_final_statement:
+  description: >
+    You will receive context containing the full workflow outputs:
+    - Document classification & validation
+    - Claim data extraction
+    - External verification results
+    - Final adjudication decision
+
+    Produce ONE concise, plain-English statement (2–4 sentences) that:
+    - Names the policy holder and decision (Approved Full/Partial or Rejected),
+    - Mentions the amount approved (if any) and the main reason,
+    - Mentions next steps or confirmation if appropriate.
+  expected_output: >
+    JSON with exactly:
+    {
+      "statement": "<2–4 sentence clear, neutral statement>"
+    }
+
+compose_email_to_policyholder:
+  description: >
+    You will receive the synthesized statement from the previous task (context).
+    Compose a short, professional email for the policyholder. Keep it under ~140 words.
+    Avoid jargon. Use a warm, helpful tone. No attachments.
+
+  expected_output: >
+    JSON with:
+    {
+      "to": "john.doe@example.com",
+      "subject": "Your Health Insurance Claim Decision",
+      "body_text": "Plain text email body (<= 140 words).",
+      "body_html": "<p>Optional simple HTML version</p>"
+    }
+
+# description: >
+#     Use the File Processor Tool to load the text content from all documents
+#     After loading the content, perform these validation steps:
+
+
+# external_verification: 
+#   description: >
+#     You have received a JSON object with freshly extracted claim data from the previous task.
+#     Your job is to act as a gatekeeper by authenticating these details with the external hospital database.
+
+#     Follow these steps:
+#     1.  From the input JSON, get the "Invoice Number", "Hospital Name", and "Claim_Amount".
+#     2.  Use the "External Hospital Claim Retriever (via ACP Bridge)" tool, passing it ONLY the "Invoice Number".
+#     3.  The tool will return a JSON string with the official hospital record. Parse this JSON.
+#     4.  Perform the verification: Check if the retrieved record has an error, or if the Hospital Name or Total Amount do not match.
+#     5.  Based on this, determine a `verification_status` ("Success" or "Failure") and a `verification_message`.
+
+#   expected_output: >
+#     A final JSON object that passes ALL information to the next agent. It MUST contain three top-level keys:
+#     1.  "original_data": The complete, unmodified JSON object you received as input from the extractor.
+#     2.  "hospital_record": The full JSON object returned by the retriever tool (or the error object if it failed).
+#     3.  "verification_details": An object containing your `status` and `message`.
+
+#     Example Output Structure:
+#     {
+#       "original_data": {
+#         "Hospital Name": "Sunshine Hospital",
+#         "Invoice Number": "INV445566",
+#         "Claim_Amount": "₹43,000",
+#         "Policy_Holder": "John Doe",
+#         ...
+#       },
+#       "hospital_record": {
+#         "Hospital Name": "Sunshine Hospital",
+#         "Invoice Number": "INV445566",
+#         "Total Amount": "₹43,000",
+#         ...
+#       },
+#       "verification_details": {
+#         "status": "Success",
+#         "message": "All details match hospital record."
+#       }
+#     }

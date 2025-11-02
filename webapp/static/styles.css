@@ -1,0 +1,86 @@
+:root {
+  --bg: #0b0f16;
+  --panel: #121826;
+  --muted: #9aa4b2;
+  --text: #e6edf7;
+  --accent: #67e8f9;
+  --accent-2: #a78bfa;
+  --ok: #34d399;
+  --warn: #f59e0b;
+  --err: #f87171;
+  --border: #1f2937;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+}
+
+.topbar {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 18px 22px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, rgba(103,232,249,.08), rgba(167,139,250,.08));
+}
+.brand { font-size: 18px; font-weight: 700; letter-spacing: .3px; }
+.subtitle { color: var(--muted); font-size: 13px; }
+
+.container { max-width: 920px; margin: 28px auto; padding: 0 16px; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.2);
+}
+
+h2 { margin: 0 0 8px; font-size: 18px; }
+.muted { color: var(--muted); margin: 0 0 12px; }
+
+.row { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
+
+input {
+  flex: 1;
+  background: #0d1422;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+input:focus { border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(167,139,250,.15); }
+
+.btn {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #041018; font-weight: 700;
+  border: none; border-radius: 10px;
+  padding: 10px 14px; cursor: pointer;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn.secondary {
+  background: #283143; color: var(--text); font-weight: 600;
+  border: 1px solid var(--border);
+}
+
+.status { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+.status.ok { color: var(--ok); }
+.status.warn { color: var(--warn); }
+.status.err { color: var(--err); }
+
+.output {
+  background: #0a0f1a; border: 1px solid var(--border);
+  color: #dbeafe; overflow: auto;
+  border-radius: 10px; padding: 12px; margin-top: 10px;
+  max-height: 420px; white-space: pre-wrap; word-break: break-word;
+}
+
+.footer {
+  color: var(--muted); font-size: 13px;
+  border-top: 1px solid var(--border);
+  padding: 14px 22px; display: flex; gap: 8px; align-items: center;
+}
+.footer code { color: var(--accent); }

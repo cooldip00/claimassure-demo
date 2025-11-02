@@ -1,0 +1,139 @@
+<!-- <!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ClaimAssure — End-to-End Flow</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/static/styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ClaimAssure</div>
+    <div class="subtitle">Agent-by-Agent Output (Minimal UI)</div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+        <h2>Run Full Claim Flow</h2>
+        <p class="muted">classify → extract → verify → adjudicate → summarize → compose email</p>
+        <button id="runBtn" class="btn">Run Pipeline</button>
+        <div id="runStatus" class="status"></div>
+    </section>
+
+    <section id="results" class="card" style="display:none;">
+        <h2>Final Statement</h2>
+        <pre id="statement" class="output"></pre>
+
+        <h2 style="margin-top:16px;">Email Preview</h2>
+        <div class="card" style="background:#0d1422; border-color:#1f2937;">
+        <div class="muted">To: <span id="emailTo"></span></div>
+        <div class="muted">Subject: <span id="emailSubject"></span></div>
+        <pre id="emailBody" class="output" style="margin-top:10px;"></pre>
+        </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Tip:</span> Ensure the policy server is running on <code>:8011</code>, and <code>data/</code> & <code>history/</code> files exist.
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html> -->
+<!-- 
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ClaimAssure — End-to-End Flow</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/static/styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ClaimAssure</div>
+    <div class="subtitle">Upload → classify → extract → verify → adjudicate → summarize → email</div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Upload Claim Documents (Policy, Bill, Claim Form)</h2>
+      <p class="muted">Accepted: PDF, DOCX, TXT. You can upload 1–10 files.</p>
+      <div class="row">
+        <input id="fileInput" type="file" multiple />
+        <button id="uploadBtn" class="btn">Upload</button>
+        <button id="runBtn" class="btn secondary" disabled>Run Pipeline</button>
+      </div>
+      <div id="uploadStatus" class="status"></div>
+      <div id="runStatus" class="status"></div>
+    </section>
+
+    <section id="results" class="card" style="display:none;">
+      <h2>Final Statement</h2>
+      <pre id="statement" class="output"></pre>
+
+      <h2 style="margin-top:16px;">Email Preview</h2>
+      <div class="card" style="background:#0d1422; border-color:#1f2937;">
+        <div class="muted">To: <span id="emailTo"></span></div>
+        <div class="muted">Subject: <span id="emailSubject"></span></div>
+        <pre id="emailBody" class="output" style="margin-top:10px;"></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Tip:</span> Start both servers: <code>:8011</code> policy & <code>:8012</code> retriever.
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html> -->
+
+<!-- webapp/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ClaimAssure — End-to-End Flow</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="/static/styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ClaimAssure</div>
+    <div class="subtitle">Upload → classify → extract → verify → adjudicate → summarize → email</div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Upload Claim Documents (Policy, Bill, Claim Form)</h2>
+      <p class="muted">Accepted: PDF, DOCX, TXT. You can upload 1–10 files.</p>
+      <div class="row">
+        <input id="fileInput" type="file" multiple />
+        <button id="uploadBtn" class="btn">Upload</button>
+        <button id="runBtn" class="btn secondary" disabled>Run Pipeline</button>
+      </div>
+      <div id="uploadStatus" class="status"></div>
+      <div id="runStatus" class="status"></div>
+    </section>
+
+    <section id="results" class="card" style="display:none;">
+      <h2>Final Statement / Debug Output</h2>
+      <pre id="statement" class="output"></pre>
+
+      <h2 style="margin-top:16px;">Email Preview</h2>
+      <div class="card" style="background:#0d1422; border-color:#1f2937;">
+        <div class="muted">To: <span id="emailTo"></span></div>
+        <div class="muted">Subject: <span id="emailSubject"></span></div>
+        <pre id="emailBody" class="output" style="margin-top:10px;"></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Tip:</span> Start both servers: <code>:8011</code> policy & <code>:8012</code> retriever.
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
