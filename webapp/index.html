@@ -100,38 +100,95 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">ClaimAssure</div>
-    <div class="subtitle">Upload → classify → extract → verify → adjudicate → summarize → email</div>
+    <div class="brand-group">
+      <div class="brand">ClaimAssure</div>
+      <p class="subtitle">Guided flow: upload ➝ classify ➝ extract ➝ verify ➝ adjudicate ➝ communicate</p>
+    </div>
+    <button id="healthCheck" class="btn ghost" type="button">Check policy server</button>
   </header>
 
   <main class="container">
-    <section class="card">
-      <h2>Upload Claim Documents (Policy, Bill, Claim Form)</h2>
-      <p class="muted">Accepted: PDF, DOCX, TXT. You can upload 1–10 files.</p>
-      <div class="row">
-        <input id="fileInput" type="file" multiple />
-        <button id="uploadBtn" class="btn">Upload</button>
-        <button id="runBtn" class="btn secondary" disabled>Run Pipeline</button>
+    <section class="card intro">
+      <div>
+        <h1>Submit a claim packet</h1>
+        <p class="muted">Drag in the source materials (policy, invoices, claims). We’ll store them in an isolated session folder and feed the bundle to the policy agent.</p>
       </div>
-      <div id="uploadStatus" class="status"></div>
-      <div id="runStatus" class="status"></div>
+      <ul class="bullets">
+        <li>Accepted: <span id="acceptedExts">PDF, DOCX, TXT</span></li>
+        <li>Limit: <span id="fileLimit">10 files per run</span></li>
+        <li>Nothing leaves your environment—files are written to the local <code>uploads/</code> directory.</li>
+      </ul>
     </section>
 
-    <section id="results" class="card" style="display:none;">
-      <h2>Final Statement / Debug Output</h2>
-      <pre id="statement" class="output"></pre>
+    <section class="layout">
+      <article class="card uploader">
+        <h2>1. Collect documents</h2>
+        <div id="dropZone" class="drop-zone" role="button" tabindex="0">
+          <svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l.117.007A1 1 0 0113 6v5h5a1 1 0 01.117 1.993L18 13h-5v5a1 1 0 01-1.993.117L11 18v-5H6a1 1 0 01-.117-1.993L6 11h5V6a1 1 0 011-1z" fill="currentColor"/></svg>
+          <p><strong>Drop files</strong> or click to browse</p>
+          <p class="muted">We’ll ignore unsupported types automatically.</p>
+          <input id="fileInput" type="file" multiple hidden />
+        </div>
 
-      <h2 style="margin-top:16px;">Email Preview</h2>
-      <div class="card" style="background:#0d1422; border-color:#1f2937;">
-        <div class="muted">To: <span id="emailTo"></span></div>
-        <div class="muted">Subject: <span id="emailSubject"></span></div>
-        <pre id="emailBody" class="output" style="margin-top:10px;"></pre>
-      </div>
+        <div class="uploader-actions">
+          <button id="browseBtn" class="btn secondary" type="button">Browse files</button>
+          <button id="clearBtn" class="btn ghost" type="button">Clear selection</button>
+          <button id="uploadBtn" class="btn" type="button">Upload to session</button>
+        </div>
+
+        <div id="uploadStatus" class="status" aria-live="polite"></div>
+
+        <ul id="fileList" class="file-list" aria-live="polite"></ul>
+      </article>
+
+      <article class="card pipeline">
+        <div class="pipeline-header">
+          <h2>2. Run policy pipeline</h2>
+          <button id="runBtn" class="btn primary" type="button" disabled>Run pipeline</button>
+        </div>
+        <p class="muted">We wrap all uploaded documents into one ACP call to <code>policy_agent</code>. Keep an eye on the live log below.</p>
+
+        <div id="runStatus" class="status" aria-live="polite"></div>
+
+        <ol id="pipelineLog" class="pipeline-log" aria-live="polite"></ol>
+      </article>
+    </section>
+
+    <section id="results" class="results-grid" hidden>
+      <article class="card result-card">
+        <header class="result-header">
+          <h2>Claim decision</h2>
+          <div class="result-actions">
+            <button id="copyStatement" class="btn ghost" type="button">Copy statement</button>
+            <button id="toggleRaw" class="btn ghost" type="button" data-open="false">Show raw JSON</button>
+          </div>
+        </header>
+        <pre id="statement" class="output" aria-live="polite"></pre>
+      </article>
+
+      <article class="card result-card">
+        <header class="result-header">
+          <h2>Email preview</h2>
+          <div class="metadata">
+            <span class="chip"><span>To</span><strong id="emailTo">—</strong></span>
+            <span class="chip"><span>Subject</span><strong id="emailSubject">—</strong></span>
+          </div>
+        </header>
+        <pre id="emailBody" class="output" aria-live="polite"></pre>
+      </article>
+
+      <article id="rawPanel" class="card raw" hidden>
+        <header class="result-header">
+          <h2>Raw response</h2>
+        </header>
+        <pre id="rawOutput" class="output"></pre>
+      </article>
     </section>
   </main>
 
   <footer class="footer">
-    <span>Tip:</span> Start both servers: <code>:8011</code> policy & <code>:8012</code> retriever.
+    <span>Tip:</span>
+    <span>Ensure the policy server on <code>:8011</code> is reachable. Uploaded files live in <code>uploads/session-*</code>.</span>
   </footer>
 
   <script src="/static/app.js"></script>
